@@ -10,6 +10,7 @@
 #include "../include/network.h"
 #include "../include/input.h"
 #include "../include/theme.h"
+#include "../include/process.h"
 
 void start_ui() {
     setlocale(LC_ALL, "");
@@ -21,6 +22,8 @@ void start_ui() {
     curs_set(FALSE);
     keypad(stdscr, TRUE);
     timeout(1000);  // Refresh every 1s
+
+    int scroll_offset = 0;
 
     ViewMode current_view = VIEW_ALL;
 
@@ -155,11 +158,29 @@ void start_ui() {
                 break;
             }
 
-            case VIEW_PROCESSES:
-                apply_color_label();
-                mvprintw(line++, 2, "Processes view not implemented yet.");
-                reset_color();
+            case VIEW_PROCESSES: {
+                ProcessInfo plist[MAX_PROCESSES];
+                int count = get_process_list(plist, MAX_PROCESSES);
+
+                int visible_lines = LINES - line - 2;  // leave room for footer
+                if (visible_lines > 20) visible_lines = 20;
+
+                if (scroll_offset > count - visible_lines) scroll_offset = count - visible_lines;
+                if (scroll_offset < 0) scroll_offset = 0;
+
+                attron(A_BOLD | COLOR_PAIR(3));
+                mvprintw(line++, 2, " %-6s %-8s %-8s %s", "PID", "CPU%", "MEM%", "Command");
+                attroff(A_BOLD | COLOR_PAIR(3));
+
+                for (int i = scroll_offset; i < count && i < scroll_offset + visible_lines; i++) {
+                    mvprintw(line++, 2, " %-6d %-8.2f %-8.2f %.40s",
+                            plist[i].pid, plist[i].cpu_percent, plist[i].mem_percent, plist[i].cmd);
+                }
+
+                mvprintw(LINES - 1, 2, "[↑/↓ to scroll, q=quit, a=All, c=CPU, m=Mem, n=Net, p=Proc]");
                 break;
+            }
+
 
             default:
                 apply_color_label();
@@ -176,6 +197,15 @@ void start_ui() {
         ViewMode new_view = handle_input(ch);
         if (new_view != VIEW_NO_CHANGE) {
             current_view = new_view;
+        }
+
+        // Pagination keys
+        if (current_view == VIEW_PROCESSES) {
+            if (ch == KEY_UP) {
+                scroll_offset--;
+            } else if (ch == KEY_DOWN) {
+                scroll_offset++;
+            }
         }
     }
 
