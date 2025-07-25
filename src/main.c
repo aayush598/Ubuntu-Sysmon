@@ -3,6 +3,7 @@
 #include "../include/cpu.h"
 #include "../include/memory.h"
 #include "../include/uptime.h"
+#include "../include/load.h"
 
 int main() {
     // CPU
@@ -25,6 +26,13 @@ int main() {
     char uptime_str[64];
     get_uptime_formatted(uptime_str, sizeof(uptime_str));
     printf("%s\n", uptime_str);
+
+    // Load Average
+    LoadAvg load;
+    char load_str[64];
+    read_load_avg(&load);
+    format_load_avg(load_str, sizeof(load_str), &load);
+    printf("%s\n", load_str);
 
     return 0;
 }
