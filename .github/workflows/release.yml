@@ -1,0 +1,31 @@
+name: Release Binary
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers only on version tags like v1.0.0
+
+jobs:
+  release:
+    name: Build & Upload Binary
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential libncurses-dev
+
+      - name: Set up version
+        run: echo "${GITHUB_REF#refs/tags/v}" > VERSION
+
+      - name: Build release binary
+        run: make release
+
+      - name: Upload Release Artifact
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/sysmon-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
