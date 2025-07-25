@@ -4,6 +4,8 @@
 #include "../include/memory.h"
 #include "../include/uptime.h"
 #include "../include/load.h"
+#include "../include/disk.h"
+
 
 int main() {
     // CPU
@@ -33,6 +35,14 @@ int main() {
     read_load_avg(&load);
     format_load_avg(load_str, sizeof(load_str), &load);
     printf("%s\n", load_str);
+
+    // Disk Usage
+    DiskStats disk;
+    char disk_str[128];
+    get_disk_usage("/", &disk);  // root filesystem
+    format_disk_usage(disk_str, sizeof(disk_str), &disk);
+    printf("%s\n", disk_str);
+
 
     return 0;
 }
