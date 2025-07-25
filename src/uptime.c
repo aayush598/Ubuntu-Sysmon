@@ -10,7 +10,9 @@ void get_uptime_formatted(char* buffer, int buffer_size) {
     }
 
     double uptime_seconds;
-    fscanf(file, "%lf", &uptime_seconds);
+    if (fscanf(file, "%lf", &uptime_seconds) != 1) {
+    // handle error
+}
     fclose(file);
 
     int days = uptime_seconds / 86400;

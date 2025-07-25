@@ -8,7 +8,10 @@ void read_load_avg(LoadAvg* load) {
         return;
     }
 
-    fscanf(file, "%f %f %f", &load->one_min, &load->five_min, &load->fifteen_min);
+    if (fscanf(file, "%f %f %f", &load->one_min, &load->five_min, &load->fifteen_min) != 3) {
+        fprintf(stderr, "Error: Failed to read load averages from /proc/loadavg\n");
+        load->one_min = load->five_min = load->fifteen_min = 0.0f;
+    }
     fclose(file);
 }
 

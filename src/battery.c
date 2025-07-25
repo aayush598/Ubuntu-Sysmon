@@ -31,7 +31,9 @@ int get_battery_info(BatteryInfo *info) {
     info->capacity = atoi(buffer);
 
     if (!read_sysfs_value("status", buffer, sizeof(buffer))) return 0;
-    strncpy(info->status, buffer, sizeof(info->status));
+    strncpy(info->status, buffer, sizeof(info->status) - 1);
+    info->status[sizeof(info->status) - 1] = '\0';  // ensure null-termination
+
 
     return 1;
 }

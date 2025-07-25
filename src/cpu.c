@@ -7,15 +7,17 @@ void read_cpu_stats(CPUStats* stats) {
     if (!file) return;
 
     char line[256];
-    fgets(line, sizeof(line), file);  // Read the first line: "cpu ..."
-    sscanf(line, "cpu  %llu %llu %llu %llu %llu %llu %llu",
-           &stats->user,
-           &stats->nice,
-           &stats->system,
-           &stats->idle,
-           &stats->iowait,
-           &stats->irq,
-           &stats->softirq);
+    if (fgets(line, sizeof(line), file)) {
+        sscanf(line, "cpu  %llu %llu %llu %llu %llu %llu %llu",
+            &stats->user,
+            &stats->nice,
+            &stats->system,
+            &stats->idle,
+            &stats->iowait,
+            &stats->irq,
+            &stats->softirq);
+    }
+
 
     fclose(file);
 }

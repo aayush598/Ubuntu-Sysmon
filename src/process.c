@@ -24,7 +24,11 @@ int get_process_list(ProcessInfo *plist, int max) {
     // Get total system uptime
     double sys_uptime = 0.0;
     if ((fp = fopen("/proc/uptime", "r")) != NULL) {
-        fscanf(fp, "%lf", &sys_uptime);
+        if (fscanf(fp, "%lf", &sys_uptime) != 1) {
+            fclose(fp);
+            closedir(dir);
+            return 0;
+        }
         fclose(fp);
     }
 
@@ -53,11 +57,24 @@ int get_process_list(ProcessInfo *plist, int max) {
         char comm[256], state;
         int dummy;
 
-        fscanf(stat, "%d %s %c", &dummy, comm, &state);
-        for (int i = 0; i < 10; i++) fscanf(stat, "%*s"); // skip fields 4–13
-        fscanf(stat, "%lu %lu", &utime, &stime);          // 14,15
-        for (int i = 0; i < 6; i++) fscanf(stat, "%*s");  // skip to 22
-        fscanf(stat, "%lu", &starttime);                  // 22
+        if (fscanf(stat, "%d %s %c", &dummy, comm, &state) != 3) {
+            fclose(stat);
+            continue;
+        }
+        for (int i = 0; i < 10; i++) {
+            if (fscanf(stat, "%*s") != 0) { /* no-op */ }
+        }
+        if (fscanf(stat, "%lu %lu", &utime, &stime) != 2) {
+            fclose(stat);
+            continue;
+        }
+        for (int i = 0; i < 6; i++) {
+            if (fscanf(stat, "%*s") != 0) { /* no-op */ }
+        }
+        if (fscanf(stat, "%lu", &starttime) != 1) {
+            fclose(stat);
+            continue;
+        }
         fclose(stat);
 
         // Read memory info (RSS)
@@ -65,14 +82,20 @@ int get_process_list(ProcessInfo *plist, int max) {
         snprintf(statm_path, sizeof(statm_path), "/proc/%d/statm", pid);
         FILE *statm = fopen(statm_path, "r");
         if (!statm) continue;
-        unsigned long total_pages, resident_pages;
-        fscanf(statm, "%lu %lu", &total_pages, &resident_pages);
+        unsigned long total_pages = 0, resident_pages = 0;
+        if (fscanf(statm, "%lu %lu", &total_pages, &resident_pages) != 2) {
+            fclose(statm);
+            continue;
+        }
         fclose(statm);
 
         // Get command
         FILE *cmd = fopen(cmd_path, "r");
         if (!cmd) continue;
-        fgets(line, sizeof(line), cmd);
+        if (!fgets(line, sizeof(line), cmd)) {
+            fclose(cmd);
+            continue;
+        }
         fclose(cmd);
 
         if (strlen(line) == 0)

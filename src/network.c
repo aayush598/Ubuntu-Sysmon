@@ -10,9 +10,15 @@ void get_network_stats(NetStats* stats) {
     char line[256];
     int count = 0;
 
-    // Skip first two lines
-    fgets(line, sizeof(line), fp);
-    fgets(line, sizeof(line), fp);
+    // Skip first two lines safely
+    if (!fgets(line, sizeof(line), fp)) {
+        fclose(fp);
+        return;
+    }
+    if (!fgets(line, sizeof(line), fp)) {
+        fclose(fp);
+        return;
+    }
 
     while (fgets(line, sizeof(line), fp) && count < MAX_INTERFACES) {
         char name[32];
@@ -87,7 +93,11 @@ int parse_proc_net(const char *path, const char *proto, NetConnection *conns, in
     char line[512];
     int count = 0;
 
-    fgets(line, sizeof(line), fp); // Skip header
+    // Safely skip header
+    if (!fgets(line, sizeof(line), fp)) {
+        fclose(fp);
+        return 0;
+    }
 
     while (fgets(line, sizeof(line), fp) && count < max) {
         char local[64], remote[64], state[8];
