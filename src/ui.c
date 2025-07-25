@@ -9,11 +9,13 @@
 #include "../include/disk.h"
 #include "../include/network.h"
 #include "../include/input.h"
+#include "../include/theme.h"
 
 void start_ui() {
     setlocale(LC_ALL, "");
 
     initscr();
+    init_theme();
     noecho();
     cbreak();
     curs_set(FALSE);
@@ -31,7 +33,7 @@ void start_ui() {
     while (1) {
         clear();
 
-        // Help + header
+        // Help + Header
         const char* view_str =
             current_view == VIEW_ALL ? "All" :
             current_view == VIEW_CPU ? "CPU" :
@@ -39,12 +41,14 @@ void start_ui() {
             current_view == VIEW_NETWORK ? "Network" :
             current_view == VIEW_PROCESSES ? "Processes" : "Unknown";
 
-        mvprintw(0, 2, "[Ubuntu System Monitor]  View: %s (a/h) | Press key: a=All, c=CPU, m=Memory, n=Net, p=Proc | q=Quit", view_str);
+        apply_color_title();
+        mvprintw(0, 2, "[Ubuntu System Monitor]  View: %s  | Press: a=All, c=CPU, m=Memory, n=Net, p=Proc, q=Quit", view_str);
+        reset_color();
         mvhline(1, 0, '=', COLS);
 
         int line = 3;
 
-        // Refresh CPU/network stats for speed calc
+        // Refresh stats
         read_cpu_stats(&curr_cpu);
         get_network_stats(&net_new);
 
@@ -55,47 +59,76 @@ void start_ui() {
         compute_network_speed(&net_old, &net_new, &rx_rate, &tx_rate);
         net_old = net_new;
 
-        // --- Render based on current view ---
         switch (current_view) {
-            case VIEW_ALL:
-                // CPU
-                mvprintw(line++, 2, "CPU Usage: %.2f%%", cpu_usage);
+            case VIEW_ALL: {
+                // --- CPU ---
+                apply_color_label();
+                mvprintw(line, 2, "CPU Usage:");
+                reset_color();
+                apply_color_value();
+                printw(" %.2f%%", cpu_usage);
+                reset_color();
+                line++;
 
-                // Memory
+                // --- Memory ---
                 MemoryStats mem;
                 read_memory_stats(&mem);
                 double mem_usage = get_memory_usage_percent(&mem);
                 unsigned long used = get_memory_used(&mem);
-                mvprintw(line++, 2, "Memory Usage: %.2f%% (%lu MB / %lu MB)", 
-                         mem_usage, used / 1024, mem.total / 1024);
+                apply_color_label();
+                mvprintw(line, 2, "Memory Usage:");
+                reset_color();
+                apply_color_value();
+                printw(" %.2f%% (%lu MB / %lu MB)", mem_usage, used / 1024, mem.total / 1024);
+                reset_color();
+                line++;
 
-                // Uptime
+                // --- Uptime ---
                 char uptime_str[64];
                 get_uptime_formatted(uptime_str, sizeof(uptime_str));
-                mvprintw(line++, 2, "%s", uptime_str);
+                apply_color_label();
+                mvprintw(line++, 2, "Uptime: ");
+                reset_color();
+                apply_color_value();
+                printw("%s", uptime_str);
+                reset_color();
 
-                // Load avg
+                // --- Load Average ---
                 LoadAvg load;
                 read_load_avg(&load);
                 char load_str[64];
                 format_load_avg(load_str, sizeof(load_str), &load);
+                apply_color_label();
                 mvprintw(line++, 2, "%s", load_str);
+                reset_color();
 
-                // Disk
+                // --- Disk ---
                 DiskStats disk;
                 char disk_str[128];
                 get_disk_usage("/", &disk);
                 format_disk_usage(disk_str, sizeof(disk_str), &disk);
+                apply_color_label();
                 mvprintw(line++, 2, "%s", disk_str);
+                reset_color();
 
-                // Network
+                // --- Network ---
                 char net_str[128];
                 format_network_usage(net_str, sizeof(net_str), rx_rate, tx_rate);
+                apply_color_label();
                 mvprintw(line++, 2, "%s", net_str);
+                reset_color();
+
                 break;
+            }
 
             case VIEW_CPU:
-                mvprintw(line++, 2, "CPU Usage: %.2f%%", cpu_usage);
+                apply_color_label();
+                mvprintw(line, 2, "CPU Usage:");
+                reset_color();
+                apply_color_value();
+                printw(" %.2f%%", cpu_usage);
+                reset_color();
+                line++;
                 break;
 
             case VIEW_MEMORY: {
@@ -103,24 +136,35 @@ void start_ui() {
                 read_memory_stats(&mem);
                 double mem_usage = get_memory_usage_percent(&mem);
                 unsigned long used = get_memory_used(&mem);
-                mvprintw(line++, 2, "Memory Usage: %.2f%% (%lu MB / %lu MB)",
-                         mem_usage, used / 1024, mem.total / 1024);
+                apply_color_label();
+                mvprintw(line, 2, "Memory Usage:");
+                reset_color();
+                apply_color_value();
+                printw(" %.2f%% (%lu MB / %lu MB)", mem_usage, used / 1024, mem.total / 1024);
+                reset_color();
+                line++;
                 break;
             }
 
             case VIEW_NETWORK: {
                 char net_str[128];
                 format_network_usage(net_str, sizeof(net_str), rx_rate, tx_rate);
+                apply_color_label();
                 mvprintw(line++, 2, "%s", net_str);
+                reset_color();
                 break;
             }
 
             case VIEW_PROCESSES:
+                apply_color_label();
                 mvprintw(line++, 2, "Processes view not implemented yet.");
+                reset_color();
                 break;
 
             default:
+                apply_color_label();
                 mvprintw(line++, 2, "Unknown view.");
+                reset_color();
                 break;
         }
 
