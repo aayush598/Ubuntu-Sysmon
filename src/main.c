@@ -5,6 +5,7 @@
 #include "../include/uptime.h"
 #include "../include/load.h"
 #include "../include/disk.h"
+#include "../include/network.h"
 
 
 int main() {
@@ -43,6 +44,18 @@ int main() {
     format_disk_usage(disk_str, sizeof(disk_str), &disk);
     printf("%s\n", disk_str);
 
+    // Network Usage
+    NetStats net_old, net_new;
+    double rx_rate = 0.0, tx_rate = 0.0;
+    char net_str[128];
+
+    get_network_stats(&net_old);
+    sleep(1);  // wait a second to measure traffic
+    get_network_stats(&net_new);
+
+    compute_network_speed(&net_old, &net_new, &rx_rate, &tx_rate);
+    format_network_usage(net_str, sizeof(net_str), rx_rate, tx_rate);
+    printf("%s\n", net_str);
 
     return 0;
 }
