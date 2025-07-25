@@ -92,10 +92,21 @@ int get_process_list(ProcessInfo *plist, int max) {
         ProcessInfo *p = &plist[count++];
         p->pid = pid;
         strncpy(p->cmd, line, sizeof(p->cmd));
+        p->cmd[sizeof(p->cmd) - 1] = '\0'; // null-terminate
         p->cpu_percent = cpu_percent;
         p->mem_percent = mem_percent;
     }
 
     closedir(dir);
     return count;
+}
+
+// ✅ Matches search query (PID or substring of command)
+int matches_filter(ProcessInfo *proc, const char *query) {
+    if (!query || strlen(query) == 0) return 1;
+
+    char pid_str[16];
+    snprintf(pid_str, sizeof(pid_str), "%d", proc->pid);
+
+    return (strstr(proc->cmd, query) != NULL || strstr(pid_str, query) != NULL);
 }

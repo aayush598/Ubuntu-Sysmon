@@ -15,4 +15,6 @@ typedef struct {
 
 int get_process_list(ProcessInfo *plist, int max);
 
+int matches_filter(ProcessInfo *proc, const char *query);
+
 #endif

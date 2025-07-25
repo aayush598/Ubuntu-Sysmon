@@ -18,4 +18,7 @@ typedef enum {
 
 ViewMode handle_input(int ch, ViewMode current, SortMode *sort_mode);
 
+int handle_search_input(int ch, char *search_query, int *is_searching);
+
+
 #endif

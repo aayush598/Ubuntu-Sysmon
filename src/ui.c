@@ -3,6 +3,7 @@
 #include <locale.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "../include/cpu.h"
 #include "../include/memory.h"
@@ -39,6 +40,9 @@ void start_ui() {
     ViewMode current_view = VIEW_ALL;
     SortMode sort_mode = SORT_NONE;
 
+    char search_query[64] = "";
+    int is_searching = 0;
+
     CPUStats prev_cpu, curr_cpu;
     read_cpu_stats(&prev_cpu);
 
@@ -48,7 +52,6 @@ void start_ui() {
     while (1) {
         clear();
 
-        // Header
         const char* view_str =
             current_view == VIEW_ALL ? "All" :
             current_view == VIEW_CPU ? "CPU" :
@@ -61,13 +64,12 @@ void start_ui() {
             sort_mode == SORT_MEM ? " (Sort: MEM%)" : "";
 
         apply_color_title();
-        mvprintw(0, 2, "[Ubuntu System Monitor]  View: %s%s  | Press: a=All, c=CPU, m=Mem, n=Net, p=Proc, s=Sort, ↑/↓=Scroll, q=Quit", view_str, sort_str);
+        mvprintw(0, 2, "[Ubuntu System Monitor]  View: %s%s  | Press: a=All, c=CPU, m=Mem, n=Net, p=Proc, s=Sort, /=Search, ↑/↓=Scroll, q=Quit", view_str, sort_str);
         reset_color();
         mvhline(1, 0, '=', COLS);
 
         int line = 3;
 
-        // Refresh stats
         read_cpu_stats(&curr_cpu);
         double cpu_usage = calculate_cpu_usage(&prev_cpu, &curr_cpu);
         prev_cpu = curr_cpu;
@@ -79,7 +81,6 @@ void start_ui() {
 
         switch (current_view) {
             case VIEW_ALL: {
-                // --- CPU ---
                 apply_color_label();
                 mvprintw(line, 2, "CPU Usage:");
                 reset_color();
@@ -88,7 +89,6 @@ void start_ui() {
                 reset_color();
                 line++;
 
-                // --- Memory ---
                 MemoryStats mem;
                 read_memory_stats(&mem);
                 double mem_usage = get_memory_usage_percent(&mem);
@@ -101,7 +101,6 @@ void start_ui() {
                 reset_color();
                 line++;
 
-                // --- Uptime ---
                 char uptime_str[64];
                 get_uptime_formatted(uptime_str, sizeof(uptime_str));
                 apply_color_label();
@@ -111,7 +110,6 @@ void start_ui() {
                 printw("%s", uptime_str);
                 reset_color();
 
-                // --- Load Average ---
                 LoadAvg load;
                 read_load_avg(&load);
                 char load_str[64];
@@ -120,7 +118,6 @@ void start_ui() {
                 mvprintw(line++, 2, "%s", load_str);
                 reset_color();
 
-                // --- Disk ---
                 DiskStats disk;
                 char disk_str[128];
                 get_disk_usage("/", &disk);
@@ -129,7 +126,6 @@ void start_ui() {
                 mvprintw(line++, 2, "%s", disk_str);
                 reset_color();
 
-                // --- Network ---
                 char net_str[128];
                 format_network_usage(net_str, sizeof(net_str), rx_rate, tx_rate);
                 apply_color_label();
@@ -176,14 +172,13 @@ void start_ui() {
                 ProcessInfo plist[MAX_PROCESSES];
                 int count = get_process_list(plist, MAX_PROCESSES);
 
-                // Sorting
                 if (sort_mode == SORT_CPU) {
                     qsort(plist, count, sizeof(ProcessInfo), compare_cpu);
                 } else if (sort_mode == SORT_MEM) {
                     qsort(plist, count, sizeof(ProcessInfo), compare_mem);
                 }
 
-                int visible_lines = LINES - line - 2;
+                int visible_lines = LINES - line - 3;
                 if (visible_lines > 20) visible_lines = 20;
 
                 if (scroll_offset > count - visible_lines) scroll_offset = count - visible_lines;
@@ -193,9 +188,20 @@ void start_ui() {
                 mvprintw(line++, 2, " %-6s %-8s %-8s %s", "PID", "CPU%", "MEM%", "Command");
                 attroff(A_BOLD | COLOR_PAIR(3));
 
-                for (int i = scroll_offset; i < count && i < scroll_offset + visible_lines; i++) {
-                    mvprintw(line++, 2, " %-6d %-8.2f %-8.2f %.40s",
+                int shown = 0;
+                for (int i = 0; i < count && shown < visible_lines; i++) {
+                    if (!matches_filter(&plist[i], search_query)) continue;
+                    if (shown >= scroll_offset) {
+                        mvprintw(line++, 2, " %-6d %-8.2f %-8.2f %.40s",
                             plist[i].pid, plist[i].cpu_percent, plist[i].mem_percent, plist[i].cmd);
+                    }
+                    shown++;
+                }
+
+                if (is_searching) {
+                    attron(A_BOLD | COLOR_PAIR(2));
+                    mvprintw(LINES - 2, 2, "Search: %s", search_query);
+                    attroff(A_BOLD | COLOR_PAIR(2));
                 }
 
                 break;
@@ -215,14 +221,35 @@ void start_ui() {
         // Quit
         if (ch == 'q' || ch == 'Q') break;
 
+        // Handle search input
+        if (is_searching) {
+            if (ch == 10 || ch == '\n') {
+                is_searching = 0;
+            } else if (ch == 127 || ch == KEY_BACKSPACE) {
+                int len = strlen(search_query);
+                if (len > 0) search_query[len - 1] = '\0';
+            } else if (isprint(ch) && strlen(search_query) < 63) {
+                int len = strlen(search_query);
+                search_query[len] = ch;
+                search_query[len + 1] = '\0';
+            }
+            continue;
+        }
+
+        // Start searching
+        if (ch == '/') {
+            is_searching = 1;
+            search_query[0] = '\0';
+            continue;
+        }
+
         // Handle input
         ViewMode new_view = handle_input(ch, current_view, &sort_mode);
         if (new_view != current_view) {
             current_view = new_view;
-            scroll_offset = 0; // reset scroll on view change
+            scroll_offset = 0;
         }
 
-        // Scroll if process view
         if (current_view == VIEW_PROCESSES) {
             if (ch == KEY_UP) scroll_offset--;
             if (ch == KEY_DOWN) scroll_offset++;
