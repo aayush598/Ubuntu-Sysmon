@@ -1,0 +1,3 @@
+ubuntu-system-monitor-dbgsym_1.0.0_amd64.ddeb debug optional automatic=yes
+ubuntu-system-monitor_1.0.0_amd64.buildinfo utils optional
+ubuntu-system-monitor_1.0.0_amd64.deb utils optional

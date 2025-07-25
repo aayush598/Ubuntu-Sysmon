@@ -1,0 +1,14 @@
+Source: ubuntu-system-monitor
+Section: utils
+Priority: optional
+Maintainer: Aayush Gid aayushgid598@gmail.com
+Build-Depends: debhelper (>= 11), build-essential, libncurses-dev
+Standards-Version: 4.1.4
+Homepage: https://github.com/aayush598/Ubuntu-sysmtem-monitor.git
+
+Package: ubuntu-system-monitor
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Terminal-based Ubuntu System Monitor
+ A lightweight, ncurses-based system monitor for Ubuntu/Linux.
+ Features live stats for CPU, memory, disk, and more.

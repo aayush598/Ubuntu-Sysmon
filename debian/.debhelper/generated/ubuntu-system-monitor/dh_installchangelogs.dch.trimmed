@@ -1,0 +1,7 @@
+ubuntu-system-monitor (1.0.0) stable; urgency=medium
+
+  * Initial stable release of Ubuntu System Monitor
+  * Supports live CPU, Memory, Disk, and Network stats
+  * Interactive TUI with filtering and sorting
+
+ -- Aayush Gid <aayushgid598@gmail.com>  Fri, 25 Jul 2025 18:50:00 +0530

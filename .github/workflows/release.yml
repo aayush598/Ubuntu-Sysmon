@@ -26,6 +26,6 @@ jobs:
       - name: Upload Release Artifact
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/sysmon-*
+          files: dist/ubuntu-system-monitor-*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

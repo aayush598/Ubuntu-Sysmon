@@ -1,0 +1,13 @@
+Package: ubuntu-system-monitor-dbgsym
+Package-Type: ddeb
+Source: ubuntu-system-monitor
+Version: 1.0.0
+Auto-Built-Package: debug-symbols
+Architecture: amd64
+Maintainer: Aayush Gid aayushgid598@gmail.com
+Installed-Size: 19
+Depends: ubuntu-system-monitor (= 1.0.0)
+Section: debug
+Priority: optional
+Description: debug symbols for ubuntu-system-monitor
+Build-Ids: b595dad1bf12f9f4f7e8d20e28c8fa18ce92960a

@@ -1,0 +1,12 @@
+Package: ubuntu-system-monitor
+Version: 1.0.0
+Architecture: amd64
+Maintainer: Aayush Gid aayushgid598@gmail.com
+Installed-Size: 48
+Depends: libc6 (>= 2.34), libncurses6 (>= 6), libtinfo6 (>= 6)
+Section: utils
+Priority: optional
+Homepage: https://github.com/aayush598/Ubuntu-sysmtem-monitor.git
+Description: Terminal-based Ubuntu System Monitor
+ A lightweight, ncurses-based system monitor for Ubuntu/Linux.
+ Features live stats for CPU, memory, disk, and more.

@@ -141,8 +141,8 @@ sudo apt install build-essential libncurses5-dev git
 ### 📥 Clone the Repository
 
 ```bash
-git clone https://github.com/aayush598/Ubuntu-sysmtem-monitor.git
-cd uUbuntu-sysmtem-monitor
+git clone https://github.com/aayush598/ubuntu-system-monitor.git
+cd uUbuntu-system-monitor
 ```
 
 ---
@@ -162,7 +162,7 @@ This will generate an executable named `monitor` in the project root.
 ### ▶️ Run the Monitor
 
 ```bash
-./sysmtem-monitor
+./ubuntu-system-monitor
 ```
 
 The terminal UI will launch and start displaying live system metrics. Use keyboard shortcuts to navigate between views (see [Usage & Keybindings](#-usage--keybindings)).
@@ -234,7 +234,7 @@ The codebase is organized into modular components — each handling a specific s
 
 ```
 
-Ubuntu-sysmtem-monitor/
+Ubuntu-system-monitor/
 ├── assets/                # Screenshots and visual assets for README
 ├── include/               # Header files (.h) for each monitoring module
 │   ├── cpu.h              # CPU usage and frequency
@@ -292,7 +292,7 @@ Feel free to open issues for bugs or feature requests. Let's build a better syst
 ## 📚 Documentation
 
 🧾 You can access the full project documentation here:  
-👉 [Ubuntu System Monitor Docs](https://aayush598.github.io/Ubuntu-sysmtem-monitor/)
+👉 [Ubuntu System Monitor Docs](https://aayush598.github.io/ubuntu-system-monitor/)
 
 
 ## 🧾 License
