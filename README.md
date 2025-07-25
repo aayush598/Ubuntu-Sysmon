@@ -125,6 +125,21 @@ Ubuntu System Monitor is built in clearly defined, modular phases — each addin
 
 Each feature is implemented as an isolated module (e.g., `cpu.c`, `disk.c`, `network.c`) making the codebase highly modular, readable, and extensible.
 
+
+## 📥 Download & run
+
+Download the latest `.deb` from [GitHub Releases](https://github.com/aayush598/ubuntu-system-monitor/releases):
+
+```bash
+wget https://github.com/aayush598/ubuntu-system-monitor/releases/download/v1.0.0/ubuntu-system-monitor_1.0.0_amd64.deb
+sudo dpkg -i ubuntu-system-monitor_1.0.0_amd64.deb
+```
+
+Then running using :
+```
+ubuntu-system-monitor
+```
+
 ## 📦 Installation
 
 To install and run Ubuntu System Monitor on a Debian-based Linux system (like Ubuntu), follow these steps:
