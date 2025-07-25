@@ -1,0 +1,11 @@
+var searchData=
+[
+  ['fifteen_5fmin_0',['fifteen_min',['../structLoadAvg.html#a1b13423e8b13c14388edfaae0ed98b15',1,'LoadAvg']]],
+  ['five_5fmin_1',['five_min',['../structLoadAvg.html#ad0a8d20c26ded7fb87e6f06f26b90b0c',1,'LoadAvg']]],
+  ['format_5fbattery_5finfo_2',['format_battery_info',['../battery_8h.html#a2e36a883b5e8b5d4a253aa17d7c66ec5',1,'format_battery_info(char *output, size_t size, const BatteryInfo *info):&#160;battery.c'],['../battery_8c.html#a2e36a883b5e8b5d4a253aa17d7c66ec5',1,'format_battery_info(char *output, size_t size, const BatteryInfo *info):&#160;battery.c']]],
+  ['format_5fdisk_5fusage_3',['format_disk_usage',['../disk_8h.html#a4a73142798bb1b094c828e63f1e5731c',1,'format_disk_usage(char *buffer, int buffer_size, const DiskStats *stats):&#160;disk.c'],['../disk_8c.html#a4a73142798bb1b094c828e63f1e5731c',1,'format_disk_usage(char *buffer, int buffer_size, const DiskStats *stats):&#160;disk.c']]],
+  ['format_5fload_5favg_4',['format_load_avg',['../load_8h.html#a269850f2787c03fe29636aca26cefcff',1,'format_load_avg(char *buffer, int buffer_size, const LoadAvg *load):&#160;load.c'],['../load_8c.html#a269850f2787c03fe29636aca26cefcff',1,'format_load_avg(char *buffer, int buffer_size, const LoadAvg *load):&#160;load.c']]],
+  ['format_5fnetwork_5fconnections_5',['format_network_connections',['../network_8h.html#a51df884888b352a07eef8ea527a9d189',1,'format_network_connections(char *buffer, int buffer_size, const NetConnection *conns, int count):&#160;network.c'],['../network_8c.html#a51df884888b352a07eef8ea527a9d189',1,'format_network_connections(char *buffer, int buffer_size, const NetConnection *conns, int count):&#160;network.c']]],
+  ['format_5fnetwork_5fusage_6',['format_network_usage',['../network_8h.html#aed5662126ee518f90a1a4abec93dcf7e',1,'format_network_usage(char *buffer, int buffer_size, double rx_rate, double tx_rate):&#160;network.c'],['../network_8c.html#aed5662126ee518f90a1a4abec93dcf7e',1,'format_network_usage(char *buffer, int buffer_size, double rx_rate, double tx_rate):&#160;network.c']]],
+  ['free_7',['free',['../structDiskStats.html#a8299d6fbe344e63183009442688d24b2',1,'DiskStats::free'],['../structMemoryStats.html#a4d1477852fcd96ea604f2221df257996',1,'MemoryStats::free']]]
+];

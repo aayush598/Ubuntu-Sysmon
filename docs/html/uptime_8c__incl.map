@@ -1,0 +1,9 @@
+<map id="src/uptime.c" name="src/uptime.c">
+<area shape="rect" id="Node000001" title=" " alt="" coords="77,5,179,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,79,72,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="115,33,66,72,62,68,112,29"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="96,79,160,104"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="131,31,131,65,125,65,125,31"/>
+<area shape="rect" id="Node000004" href="$uptime_8h.html" title=" " alt="" coords="185,79,327,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="150,28,224,69,222,74,147,33"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="get_disk_io_rates" name="get_disk_io_rates">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,31,141,56"/>
+<area shape="rect" id="Node000002" href="$disk_8c.html#a1f7ce14d93e75b8cf33e94ac3cf79bff" title=" " alt="" coords="189,5,355,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,32,175,28,176,33,142,37"/>
+<area shape="rect" id="Node000003" href="$disk_8c.html#a6aef119f5b625e349bc6afab75264f19" title=" " alt="" coords="205,55,339,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="142,49,191,55,190,60,141,54"/>
+</map>

@@ -1,0 +1,10 @@
+PROJECT_NAME           = "Ubuntu System Monitor"
+OUTPUT_DIRECTORY       = docs
+RECURSIVE              = YES
+INPUT                  = .
+FILE_PATTERNS          = *.c *.h
+GENERATE_LATEX         = NO
+EXTRACT_ALL            = YES
+HAVE_DOT               = YES
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
