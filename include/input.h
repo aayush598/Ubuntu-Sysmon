@@ -10,6 +10,12 @@ typedef enum {
     VIEW_NO_CHANGE
 } ViewMode;
 
-ViewMode handle_input(int ch);
+typedef enum {
+    SORT_NONE,
+    SORT_CPU,
+    SORT_MEM
+} SortMode;
+
+ViewMode handle_input(int ch, ViewMode current, SortMode *sort_mode);
 
 #endif

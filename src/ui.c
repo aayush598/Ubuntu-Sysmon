@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <locale.h>
 #include <string.h>
+#include <stdlib.h>
+
 #include "../include/cpu.h"
 #include "../include/memory.h"
 #include "../include/uptime.h"
@@ -11,6 +13,16 @@
 #include "../include/input.h"
 #include "../include/theme.h"
 #include "../include/process.h"
+
+int compare_cpu(const void *a, const void *b) {
+    float diff = ((ProcessInfo *)b)->cpu_percent - ((ProcessInfo *)a)->cpu_percent;
+    return (diff > 0) - (diff < 0);
+}
+
+int compare_mem(const void *a, const void *b) {
+    float diff = ((ProcessInfo *)b)->mem_percent - ((ProcessInfo *)a)->mem_percent;
+    return (diff > 0) - (diff < 0);
+}
 
 void start_ui() {
     setlocale(LC_ALL, "");
@@ -24,8 +36,8 @@ void start_ui() {
     timeout(1000);  // Refresh every 1s
 
     int scroll_offset = 0;
-
     ViewMode current_view = VIEW_ALL;
+    SortMode sort_mode = SORT_NONE;
 
     CPUStats prev_cpu, curr_cpu;
     read_cpu_stats(&prev_cpu);
@@ -36,7 +48,7 @@ void start_ui() {
     while (1) {
         clear();
 
-        // Help + Header
+        // Header
         const char* view_str =
             current_view == VIEW_ALL ? "All" :
             current_view == VIEW_CPU ? "CPU" :
@@ -44,8 +56,12 @@ void start_ui() {
             current_view == VIEW_NETWORK ? "Network" :
             current_view == VIEW_PROCESSES ? "Processes" : "Unknown";
 
+        const char* sort_str =
+            sort_mode == SORT_CPU ? " (Sort: CPU%)" :
+            sort_mode == SORT_MEM ? " (Sort: MEM%)" : "";
+
         apply_color_title();
-        mvprintw(0, 2, "[Ubuntu System Monitor]  View: %s  | Press: a=All, c=CPU, m=Memory, n=Net, p=Proc, q=Quit", view_str);
+        mvprintw(0, 2, "[Ubuntu System Monitor]  View: %s%s  | Press: a=All, c=CPU, m=Mem, n=Net, p=Proc, s=Sort, ↑/↓=Scroll, q=Quit", view_str, sort_str);
         reset_color();
         mvhline(1, 0, '=', COLS);
 
@@ -53,11 +69,10 @@ void start_ui() {
 
         // Refresh stats
         read_cpu_stats(&curr_cpu);
-        get_network_stats(&net_new);
-
         double cpu_usage = calculate_cpu_usage(&prev_cpu, &curr_cpu);
         prev_cpu = curr_cpu;
 
+        get_network_stats(&net_new);
         double rx_rate = 0.0, tx_rate = 0.0;
         compute_network_speed(&net_old, &net_new, &rx_rate, &tx_rate);
         net_old = net_new;
@@ -120,7 +135,6 @@ void start_ui() {
                 apply_color_label();
                 mvprintw(line++, 2, "%s", net_str);
                 reset_color();
-
                 break;
             }
 
@@ -162,7 +176,14 @@ void start_ui() {
                 ProcessInfo plist[MAX_PROCESSES];
                 int count = get_process_list(plist, MAX_PROCESSES);
 
-                int visible_lines = LINES - line - 2;  // leave room for footer
+                // Sorting
+                if (sort_mode == SORT_CPU) {
+                    qsort(plist, count, sizeof(ProcessInfo), compare_cpu);
+                } else if (sort_mode == SORT_MEM) {
+                    qsort(plist, count, sizeof(ProcessInfo), compare_mem);
+                }
+
+                int visible_lines = LINES - line - 2;
                 if (visible_lines > 20) visible_lines = 20;
 
                 if (scroll_offset > count - visible_lines) scroll_offset = count - visible_lines;
@@ -177,10 +198,8 @@ void start_ui() {
                             plist[i].pid, plist[i].cpu_percent, plist[i].mem_percent, plist[i].cmd);
                 }
 
-                mvprintw(LINES - 1, 2, "[↑/↓ to scroll, q=quit, a=All, c=CPU, m=Mem, n=Net, p=Proc]");
                 break;
             }
-
 
             default:
                 apply_color_label();
@@ -192,20 +211,21 @@ void start_ui() {
         refresh();
 
         int ch = getch();
+
+        // Quit
         if (ch == 'q' || ch == 'Q') break;
 
-        ViewMode new_view = handle_input(ch);
-        if (new_view != VIEW_NO_CHANGE) {
+        // Handle input
+        ViewMode new_view = handle_input(ch, current_view, &sort_mode);
+        if (new_view != current_view) {
             current_view = new_view;
+            scroll_offset = 0; // reset scroll on view change
         }
 
-        // Pagination keys
+        // Scroll if process view
         if (current_view == VIEW_PROCESSES) {
-            if (ch == KEY_UP) {
-                scroll_offset--;
-            } else if (ch == KEY_DOWN) {
-                scroll_offset++;
-            }
+            if (ch == KEY_UP) scroll_offset--;
+            if (ch == KEY_DOWN) scroll_offset++;
         }
     }
 
