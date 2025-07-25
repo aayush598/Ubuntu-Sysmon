@@ -15,6 +15,8 @@
 #include "../include/theme.h"
 #include "../include/process.h"
 #include "../include/cpufreq.h"
+#include "../include/battery.h"
+
 
 int compare_cpu(const void *a, const void *b) {
     float diff = ((ProcessInfo *)b)->cpu_percent - ((ProcessInfo *)a)->cpu_percent;
@@ -157,6 +159,19 @@ void start_ui() {
                 printw(" %.2f%%", cpu_usage);
                 reset_color();
 
+                BatteryInfo bat;
+                if (get_battery_info(&bat)) {
+                    apply_color_label();
+                    mvprintw(line++, 2, "Battery: ");
+                    reset_color();
+
+                    apply_color_value();
+                    printw("%d%% (%s)", bat.capacity, bat.status);
+                    reset_color();
+                }
+
+
+
                 int freqs_khz[32];
                 int core_count = get_cpu_freqs_khz(freqs_khz, 32);
                 for (int i = 0; i < core_count; i++) {
@@ -167,6 +182,8 @@ void start_ui() {
                     printw("%d MHz", freqs_khz[i] / 1000);
                     reset_color();
                 }
+
+                
                 break;
             }
 
