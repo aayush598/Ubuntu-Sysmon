@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include "../include/cpu.h"
 #include "../include/memory.h"
+#include "../include/uptime.h"
 
 int main() {
     // CPU
@@ -19,6 +20,11 @@ int main() {
     unsigned long used = get_memory_used(&mem);
     printf("Memory Usage: %.2f%% (%lu MB / %lu MB)\n",
         mem_usage_percent, used / 1024, mem.total / 1024);
+
+    // Uptime
+    char uptime_str[64];
+    get_uptime_formatted(uptime_str, sizeof(uptime_str));
+    printf("%s\n", uptime_str);
 
     return 0;
 }
