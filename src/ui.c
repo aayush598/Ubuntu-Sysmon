@@ -14,6 +14,7 @@
 #include "../include/input.h"
 #include "../include/theme.h"
 #include "../include/process.h"
+#include "../include/cpufreq.h"
 
 int compare_cpu(const void *a, const void *b) {
     float diff = ((ProcessInfo *)b)->cpu_percent - ((ProcessInfo *)a)->cpu_percent;
@@ -34,7 +35,7 @@ void start_ui() {
     cbreak();
     curs_set(FALSE);
     keypad(stdscr, TRUE);
-    timeout(1000);  // Refresh every 1s
+    timeout(1000);  // 1s refresh
 
     int scroll_offset = 0;
     ViewMode current_view = VIEW_ALL;
@@ -64,11 +65,16 @@ void start_ui() {
             sort_mode == SORT_MEM ? " (Sort: MEM%)" : "";
 
         apply_color_title();
-        mvprintw(0, 2, "[Ubuntu System Monitor]  View: %s%s  | Press: a=All, c=CPU, m=Mem, n=Net, p=Proc, s=Sort, /=Search, ↑/↓=Scroll, q=Quit", view_str, sort_str);
+        mvprintw(0, 2, "[Ubuntu System Monitor]  View: %s%s", view_str, sort_str);
         reset_color();
         mvhline(1, 0, '=', COLS);
 
-        int line = 3;
+        // Help / Instructions
+        apply_color_help();
+        mvprintw(2, 2, "Help: a=All  c=CPU  m=Mem  n=Net  p=Proc  s=Sort  /=Search  ↑/↓=Scroll  q=Quit");
+        reset_color();
+
+        int line = 4;
 
         read_cpu_stats(&curr_cpu);
         double cpu_usage = calculate_cpu_usage(&prev_cpu, &curr_cpu);
@@ -134,15 +140,26 @@ void start_ui() {
                 break;
             }
 
-            case VIEW_CPU:
+            case VIEW_CPU: {
                 apply_color_label();
-                mvprintw(line, 2, "CPU Usage:");
+                mvprintw(line++, 2, "CPU Usage:");
                 reset_color();
                 apply_color_value();
                 printw(" %.2f%%", cpu_usage);
                 reset_color();
-                line++;
+
+                int freqs_khz[32];
+                int core_count = get_cpu_freqs_khz(freqs_khz, 32);
+                for (int i = 0; i < core_count; i++) {
+                    apply_color_label();
+                    mvprintw(line++, 2, "Core %d Frequency: ", i);
+                    reset_color();
+                    apply_color_value();
+                    printw("%d MHz", freqs_khz[i] / 1000);
+                    reset_color();
+                }
                 break;
+            }
 
             case VIEW_MEMORY: {
                 MemoryStats mem;
@@ -179,9 +196,8 @@ void start_ui() {
                 }
 
                 int visible_lines = LINES - line - 3;
-                if (visible_lines > 20) visible_lines = 20;
-
-                if (scroll_offset > count - visible_lines) scroll_offset = count - visible_lines;
+                if (scroll_offset > count - visible_lines)
+                    scroll_offset = count - visible_lines;
                 if (scroll_offset < 0) scroll_offset = 0;
 
                 attron(A_BOLD | COLOR_PAIR(3));
@@ -203,7 +219,6 @@ void start_ui() {
                     mvprintw(LINES - 2, 2, "Search: %s", search_query);
                     attroff(A_BOLD | COLOR_PAIR(2));
                 }
-
                 break;
             }
 
@@ -218,10 +233,8 @@ void start_ui() {
 
         int ch = getch();
 
-        // Quit
         if (ch == 'q' || ch == 'Q') break;
 
-        // Handle search input
         if (is_searching) {
             if (ch == 10 || ch == '\n') {
                 is_searching = 0;
@@ -236,14 +249,12 @@ void start_ui() {
             continue;
         }
 
-        // Start searching
         if (ch == '/') {
             is_searching = 1;
             search_query[0] = '\0';
             continue;
         }
 
-        // Handle input
         ViewMode new_view = handle_input(ch, current_view, &sort_mode);
         if (new_view != current_view) {
             current_view = new_view;

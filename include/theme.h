@@ -6,5 +6,6 @@ void apply_color_title();
 void apply_color_label();
 void apply_color_value();
 void reset_color();
+void apply_color_help();
 
 #endif
