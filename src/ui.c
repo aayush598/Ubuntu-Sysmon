@@ -132,6 +132,15 @@ void start_ui() {
                 mvprintw(line++, 2, "%s", disk_str);
                 reset_color();
 
+                double read_rate, write_rate;
+                get_disk_io_rates(&read_rate, &write_rate);
+                apply_color_label();
+                mvprintw(line++, 2, "Disk I/O: ");
+                reset_color();
+                apply_color_value();
+                printw("Read %.2f KB/s, Write %.2f KB/s", read_rate, write_rate);
+                reset_color();
+                
                 char net_str[128];
                 format_network_usage(net_str, sizeof(net_str), rx_rate, tx_rate);
                 apply_color_label();
