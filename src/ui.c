@@ -191,6 +191,33 @@ void start_ui() {
                 apply_color_label();
                 mvprintw(line++, 2, "%s", net_str);
                 reset_color();
+
+                NetConnection conns[256];
+                int conn_count = get_network_connections(conns, 256);
+
+                int visible_lines = LINES - line - 3;
+                if (scroll_offset > conn_count - visible_lines)
+                    scroll_offset = conn_count - visible_lines;
+                if (scroll_offset < 0) scroll_offset = 0;
+
+                // Header
+                attron(A_BOLD | COLOR_PAIR(3));
+                mvprintw(line++, 2, " %-22s %-22s %-6s", "Local Address", "Remote Address", "State");
+                attroff(A_BOLD | COLOR_PAIR(3));
+
+                // Print each connection with scroll
+                int shown = 0;
+                for (int i = 0; i < conn_count && shown < visible_lines; i++) {
+                    if (i < scroll_offset) continue;
+
+                    mvprintw(line++, 2, " %-22s %-22s %-6s",
+                            conns[i].local_address,
+                            conns[i].remote_address,
+                            conns[i].state);
+                    shown++;
+                }
+
+
                 break;
             }
 
@@ -270,7 +297,7 @@ void start_ui() {
             scroll_offset = 0;
         }
 
-        if (current_view == VIEW_PROCESSES) {
+        if (current_view == VIEW_PROCESSES || current_view == VIEW_NETWORK) {
             if (ch == KEY_UP) scroll_offset--;
             if (ch == KEY_DOWN) scroll_offset++;
         }
