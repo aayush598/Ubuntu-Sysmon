@@ -3,7 +3,7 @@
 
 ## 🚀 Overview
 
-**Ubuntu Sysmon** is a lightweight, real-time system monitoring tool designed for Linux systems. Built entirely in **C** using raw data from the `/proc/` and `/sys/` filesystems, it provides detailed insights into CPU usage, memory consumption, disk I/O, network activity, and running processes — all within an interactive terminal interface powered by **ncurses**.
+**Ubuntu System Monitor** is a lightweight, real-time system monitoring tool designed for Linux systems. Built entirely in **C** using raw data from the `/proc/` and `/sys/` filesystems, it provides detailed insights into CPU usage, memory consumption, disk I/O, network activity, and running processes — all within an interactive terminal interface powered by **ncurses**.
 
 This project was developed as a modular, extensible alternative to tools like `htop`, with the goal of understanding low-level system internals while delivering a responsive and visually organized monitoring experience.
 
@@ -141,8 +141,8 @@ sudo apt install build-essential libncurses5-dev git
 ### 📥 Clone the Repository
 
 ```bash
-git clone https://github.com/aayush598/Ubuntu-Sysmon.git
-cd uUbuntu-Sysmon
+git clone https://github.com/aayush598/Ubuntu-sysmtem-monitor.git
+cd uUbuntu-sysmtem-monitor
 ```
 
 ---
@@ -162,7 +162,7 @@ This will generate an executable named `monitor` in the project root.
 ### ▶️ Run the Monitor
 
 ```bash
-./sysmon
+./sysmtem-monitor
 ```
 
 The terminal UI will launch and start displaying live system metrics. Use keyboard shortcuts to navigate between views (see [Usage & Keybindings](#-usage--keybindings)).
@@ -234,7 +234,7 @@ The codebase is organized into modular components — each handling a specific s
 
 ```
 
-Ubuntu-Sysmon/
+Ubuntu-sysmtem-monitor/
 ├── assets/                # Screenshots and visual assets for README
 ├── include/               # Header files (.h) for each monitoring module
 │   ├── cpu.h              # CPU usage and frequency
@@ -288,6 +288,12 @@ If you'd like to improve features, fix bugs, or add enhancements:
 4. Push to your fork and open a pull request
 
 Feel free to open issues for bugs or feature requests. Let's build a better system monitor together!
+
+## 📚 Documentation
+
+🧾 You can access the full project documentation here:  
+👉 [Ubuntu System Monitor Docs](https://aayush598.github.io/Ubuntu-sysmtem-monitor/)
+
 
 ## 🧾 License
 
