@@ -1,71 +1,101 @@
-#include "../include/process.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <dirent.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 
-static int is_number(const char *str) {
-    while (*str) {
-        if (!isdigit(*str++)) return 0;
-    }
-    return 1;
-}
+#include "../include/process.h"
+
+#define BUFFER_SIZE 1024
 
 int get_process_list(ProcessInfo *plist, int max) {
-    DIR *proc = opendir("/proc");
-    if (!proc) return 0;
+    DIR *dir = opendir("/proc");
+    if (!dir) return 0;
 
+    FILE *fp;
     struct dirent *entry;
     int count = 0;
 
+    long clk_tck = sysconf(_SC_CLK_TCK);
     long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024;
-    long total_mem_kb = sysconf(_SC_PHYS_PAGES) * page_size_kb;
 
-    while ((entry = readdir(proc)) != NULL && count < max) {
-        if (!is_number(entry->d_name)) continue;
+    // Get total system uptime
+    double sys_uptime = 0.0;
+    if ((fp = fopen("/proc/uptime", "r")) != NULL) {
+        fscanf(fp, "%lf", &sys_uptime);
+        fclose(fp);
+    }
+
+    // Get total memory
+    unsigned long total_mem_kb = 0;
+    if ((fp = fopen("/proc/meminfo", "r")) != NULL) {
+        char label[64];
+        while (fscanf(fp, "%63s %lu", label, &total_mem_kb) == 2) {
+            if (strcmp(label, "MemTotal:") == 0) break;
+        }
+        fclose(fp);
+    }
+
+    while ((entry = readdir(dir)) != NULL && count < max) {
+        if (!isdigit(entry->d_name[0])) continue;
 
         int pid = atoi(entry->d_name);
-        char stat_path[64], cmd_path[64];
+        char stat_path[256], cmd_path[256], line[BUFFER_SIZE];
         snprintf(stat_path, sizeof(stat_path), "/proc/%d/stat", pid);
         snprintf(cmd_path, sizeof(cmd_path), "/proc/%d/cmdline", pid);
 
-        FILE *stat_file = fopen(stat_path, "r");
-        if (!stat_file) continue;
+        FILE *stat = fopen(stat_path, "r");
+        if (!stat) continue;
 
-        unsigned long utime, stime;
-        long rss;
-        int scanned = fscanf(stat_file,
-            "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*u %*u %*u %*u "
-            "%lu %lu %*d %*d %*d %*d %*d %*u %*u %ld",
-            &utime, &stime, &rss);
-        fclose(stat_file);
-        if (scanned != 3) continue;
+        unsigned long utime, stime, starttime;
+        char comm[256], state;
+        int dummy;
 
-        double cpu_percent = (utime + stime) / (double)sysconf(_SC_CLK_TCK);
+        fscanf(stat, "%d %s %c", &dummy, comm, &state);
+        for (int i = 0; i < 10; i++) fscanf(stat, "%*s"); // skip fields 4–13
+        fscanf(stat, "%lu %lu", &utime, &stime);          // 14,15
+        for (int i = 0; i < 6; i++) fscanf(stat, "%*s");  // skip to 22
+        fscanf(stat, "%lu", &starttime);                  // 22
+        fclose(stat);
 
-        FILE *cmd_file = fopen(cmd_path, "r");
-        if (!cmd_file) continue;
+        // Read memory info (RSS)
+        char statm_path[256];
+        snprintf(statm_path, sizeof(statm_path), "/proc/%d/statm", pid);
+        FILE *statm = fopen(statm_path, "r");
+        if (!statm) continue;
+        unsigned long total_pages, resident_pages;
+        fscanf(statm, "%lu %lu", &total_pages, &resident_pages);
+        fclose(statm);
 
-        char cmdline[MAX_CMD_LEN];
-        fgets(cmdline, sizeof(cmdline), cmd_file);
-        fclose(cmd_file);
+        // Get command
+        FILE *cmd = fopen(cmd_path, "r");
+        if (!cmd) continue;
+        fgets(line, sizeof(line), cmd);
+        fclose(cmd);
 
-        if (strlen(cmdline) == 0) {
-            snprintf(cmdline, sizeof(cmdline), "[%d]", pid);
-        }
+        if (strlen(line) == 0)
+            snprintf(line, sizeof(line), "[%s]", comm);  // fallback if cmdline empty
 
-        strncpy(plist[count].cmd, cmdline, MAX_CMD_LEN);
-        plist[count].pid = pid;
-        plist[count].cpu_percent = cpu_percent;
-        plist[count].mem_percent = (rss * page_size_kb) * 100.0 / total_mem_kb;
+        // CPU calculation
+        unsigned long total_time = utime + stime;
+        double seconds = sys_uptime - ((double)starttime / clk_tck);
+        double cpu_percent = 0.0;
+        if (seconds > 0)
+            cpu_percent = 100.0 * ((double)total_time / clk_tck) / seconds;
 
-        count++;
+        // Memory calculation
+        double mem_percent = 100.0 * (resident_pages * page_size_kb) / total_mem_kb;
+
+        // Store process info
+        ProcessInfo *p = &plist[count++];
+        p->pid = pid;
+        strncpy(p->cmd, line, sizeof(p->cmd));
+        p->cpu_percent = cpu_percent;
+        p->mem_percent = mem_percent;
     }
 
-    closedir(proc);
+    closedir(dir);
     return count;
 }
