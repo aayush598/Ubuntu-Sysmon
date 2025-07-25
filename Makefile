@@ -1,9 +1,9 @@
 CC = gcc
 CFLAGS = -Wall -Iinclude
 
-SRC = src/main.c src/cpu.c
+SRC = $(wildcard src/*.c)
 OUT = sysmon
-
+	
 all:
 	$(CC) $(SRC) -o $(OUT) $(CFLAGS)
 
