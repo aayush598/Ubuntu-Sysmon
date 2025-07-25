@@ -49,5 +49,5 @@ void compute_network_speed(const NetStats* old_stats, const NetStats* new_stats,
 
 void format_network_usage(char* buffer, int buffer_size, double rx_rate, double tx_rate) {
     snprintf(buffer, buffer_size,
-             "Net: ↑ %.2f KB/s   ↓ %.2f KB/s", tx_rate, rx_rate);
+             "Net: TX %.2f KB/s   RX %.2f KB/s", tx_rate, rx_rate);
 }
